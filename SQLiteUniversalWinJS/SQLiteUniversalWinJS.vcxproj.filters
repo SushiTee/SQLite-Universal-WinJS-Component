@@ -7,15 +7,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="util.h" />
     <ClInclude Include="Database.h" />
-    <ClInclude Include="ExecuteResultRow.h" />
-    <ClInclude Include="pch.h" />
+    <ClInclude Include="Common.h" />
+    <ClInclude Include="Constants.h" />
+    <ClInclude Include="Statement.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Database.cpp" />
-    <ClCompile Include="ExecuteResultRow.cpp" />
-    <ClCompile Include="pch.cpp" />
-    <ClCompile Include="util.cpp" />
+    <ClCompile Include="sqlite3secure.c" />
+    <ClCompile Include="Common.cpp" />
+    <ClCompile Include="Constants.cpp" />
+    <ClCompile Include="Statement.cpp" />
   </ItemGroup>
 </Project>

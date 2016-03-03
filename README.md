@@ -4,7 +4,7 @@ SQLite Universal WinJS Component for Javascript Windows Store Apps running on th
 ## Setup
 
 _SQLite Universal WinJS_ consists of two parts: 1) WinRT C++ universal component named
-_SQLite3Component_ and 2) A JavaScript file called _SQLiteHelper_ that builds
+_SQLite3Component_ and 2) A JavaScript file called _SQLite.js_ that builds
 upon the component and simplifies use.
 
 To use this component, copy the _SQLiteUniversalWinJS_ folder to the root of your app's solution folder.
@@ -14,67 +14,40 @@ Then in Visual Studio, go to File -> Add -> Existing Project, and choose the fil
 Next, add a reference to the component in your app solution's main project in Visual Studio by going to Project -> Add Reference ... ,
 where you go to Projects, and enable the _SQLiteUniversalWinJS_ project as a reference.
 <br>
-Finally, copy the JavaScript file _SQLiteHelper.js_ from the _WinRT Javascript Helper Files_ folder to the _js_ folder in your solution's
+Finally, copy the JavaScript file _SQLite.js_ from the _WinRT Javascript Helper Files_ folder to the _js_ folder in your solution's
 main project, and reference it in your _default.html_ file to use it.
-
-#### Dependencies
-This component uses the *SQLite for Universal App Platform* extension, by the SQLite Development Team.
-(Current version = 3.8.11.1)
-The extension is **required** for the component to work.
 
 ## Usage
 
-One custom JavaScript method in _SQLiteHelper.js_ is _checkDatabaseAsync(databaseFolder, databaseFileName)_, which, will check
-if a global database object is defined, and if not, will define one, before returning a WinJS.Promise object. 
-<br>
-To use, customize the _MyGlobals.database_ variable in it, to be the variable name you use for your global database object.
+The _SQLite3JS_ namespace provides an async JavaScript API for SQLite. It is built
+around the `Database` object that can be obtained using `SQLite3JS.openAsync()`.
+The API was inspired by [node-sqlite3][2].
 
 ## Examples
 
 ```javascript
-checkDatabaseAsync().then(function () {
-    MyGlobals.database.executeAsync("SELECT * FROM Books").then(function (rows) {
-        rows.forEach(function (row) {
-            var book = {
-                bookName: row.getFirstValueByName("bookName")
-            };
-            // do something after forEach here
-        });
+var dbPath = Windows.Storage.ApplicationData.current.localFolder.path + '\\db.sqlite';
+SQLite3JS.openAsync(dbPath)
+.then(function (db) {
+  return db.runAsync('CREATE TABLE Item (name TEXT, price REAL, id INT PRIMARY KEY)')
+  .then(function () {
+    return db.runAsync('INSERT INTO Item (name, price, id) VALUES (?, ?, ?)', ['Mango', 4.6, 123]);
+  })
+  .then(function () {
+    return db.eachAsync('SELECT * FROM Item', function (row) {
+      console.log('Get a ' + row.name + ' for $' + row.price);
     });
+  })
+  .then(function () {
+    db.close();
+  });
 });
-```
-<br>
-```javascript
-function createDB() {
-  // Create the request to open the database, named BookDB. If it doesn't exist, create it.
-  var database;
-
-  SQLite.Database.openDatabaseInFolderAsync(Windows.Storage.ApplicationData.current.roamingFolder, "BookDB.sqlite").then(
-      function (openedOrCreatedDatabase) {
-          database = openedOrCreatedDatabase;
-          return executeStatementsAsTransactionAsync(database, [
-              "CREATE TABLE IF NOT EXISTS books (id INTEGER PRIMARY KEY UNIQUE, title TEXT, authorid INTEGER);",
-              "CREATE TABLE IF NOT EXISTS authors (id INTEGER PRIMARY KEY UNIQUE, name TEXT);",
-              "CREATE TABLE IF NOT EXISTS checkout (id INTEGER PRIMARY KEY UNIQUE, status INTEGER);"
-          ]);
-      }).then(function () {
-          if (database) {
-              database.close();
-              database = null;
-          }
-      },
-      function (err) {
-          if (database) {
-              database.close();
-              database = null;
-          }
-          WinJS.log && WinJS.log("Database open failure: " + err, "sample", "error");
-      });
-}
 ```
 ## Credits
 This is a port of the Windows 8.1 Component by Dave Risney found at https://code.msdn.microsoft.com/windowsapps/Universal-JavaScript-5728abdb
 <br>
-For more information, go to http://blogs.windows.com/buildingapps/2014/07/02/writing-a-sqlite-wrapper-component-for-universal-windows-apps/
-
-			    
+The project was changed to be independent of the *SQLite for Universal App Platform* extension and with the possibility to use database encryption.
+<br>
+For the encryption *wxSQLite* is used: http://wxcode.sourceforge.net/components/wxsqlite3/
+<br>
+For the database function the project *SQLite3-WinRT* is used as it fits my needs better: https://github.com/doo/SQLite3-WinRT		    
